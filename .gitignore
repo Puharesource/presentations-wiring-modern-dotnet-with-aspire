@@ -1,0 +1,12 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+**/.angular/
+.idea/
+.vs/
+.local/
+.aspire/
+.env
+*.user
+.DS_Store

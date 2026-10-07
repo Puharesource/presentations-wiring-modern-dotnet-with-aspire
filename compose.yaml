@@ -1,0 +1,51 @@
+services:
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${SQL_PASSWORD:?Copy .env.example to .env first}
+    ports:
+      - "127.0.0.1:14330:1433"
+    volumes:
+      - sql-data:/var/opt/mssql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -Q 'SELECT 1' -b -o /dev/null
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  cache:
+    image: redis:8.2-alpine
+    ports:
+      - "127.0.0.1:63790:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  backend:
+    build:
+      context: .
+      dockerfile: Backend/Dockerfile
+    ports:
+      - "127.0.0.1:5244:8080"
+    environment:
+      ConnectionStrings__appdb: Server=sql;Database=appdb;User Id=sa;Password=${SQL_PASSWORD};TrustServerCertificate=True
+      ConnectionStrings__cache: cache:6379
+    depends_on:
+      sql:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+  frontend:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:5173:5173"
+    environment:
+      BACKEND_ENDPOINT: http://backend:8080
+    depends_on:
+      - backend
+volumes:
+  sql-data:
