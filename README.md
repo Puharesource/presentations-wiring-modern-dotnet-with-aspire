@@ -10,14 +10,17 @@ A deliberately small users application: frontend → .NET API → SQL Server, wi
 
 The original folders are preserved outside this repository at `../ModernizeWithAspire-originals-20261007`. Both originals already contained Aspire and Angular; `before` is an explicit Compose baseline derived from their users feature.
 
-## Run the Compose baseline
+## Run with Aspire
 
 ```sh
-cp .env.example .env
-docker compose up --build --wait
+aspire start --apphost AppHost/AppHost.csproj --non-interactive
+aspire wait frontend --apphost AppHost/AppHost.csproj --non-interactive
+aspire describe --apphost AppHost/AppHost.csproj --non-interactive
 ```
 
-Open http://localhost:5173. The API is http://localhost:5244; OpenAPI is `/openapi/v1.json`.
+Open the frontend URL printed by Aspire. Its port is allocated by the AppHost; the dashboard shows API logs, SQL/Redis health, and traces. `aspire stop --apphost AppHost/AppHost.csproj --non-interactive` stops this app. Development SQL data stays in the `modernize-demo-sql-data` volume across restarts.
+
+## Test a fresh environment
 
 ```sh
 dotnet build
@@ -25,7 +28,15 @@ pwsh Tests/bin/Debug/net10.0/playwright.ps1 install chromium
 dotnet run --project Tests
 ```
 
-Tests on this branch expect the app to be running. The regular SQL volume keeps development data. `docker compose down` stops the environment without deleting it.
+TUnit creates a separate AppHost for each test run, waits for resources, and disposes it afterward. `--UseVolumes=false` prevents tests from reading or modifying your persistent development database. Aspire allocates ports and injects connection strings into the API. Tests use `CreateHttpClient` and `GetConnectionStringAsync` instead of parsing fixed addresses or credentials themselves.
+
+The tests cover a React browser journey, Redis response reuse/invalidation, and connections to the actual SQL/Redis resources. Run them while your development environment is running to demonstrate their isolation.
+
+## Rehearse the migration
+
+Start on `live` (initially identical to `before`). Run Compose and show the users page, cache reuse, and configuration. Stop Compose before moving to Aspire. Compare with `git diff before..after -- AppHost Backend Tests` as your reference. Add the AppHost resources, replace the backend's manual registrations with Aspire integrations, then replace the test fixture. The UI and business endpoints stay the same.
+
+Switch branches only after stopping the current environment. On `before`/`live`, use the Compose commands documented in that branch's README. On `after`, use the commands above.
 
 ## Navigate the demo
 

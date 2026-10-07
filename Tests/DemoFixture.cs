@@ -1,18 +1,24 @@
-using Microsoft.Extensions.Configuration;
+using TUnit.Aspire;
+using System.Net.Http.Json;
+using Backend.Entities;
 
 namespace Tests;
 
-// Compose must already be running. The before branch does not own its environment.
-public class DemoFixture
+// One fresh stack per test run. The fixture owns startup, readiness, and cleanup.
+public class DemoFixture : AspireFixture<Projects.AppHost>
 {
-    private readonly IConfiguration config = new ConfigurationBuilder().AddEnvironmentVariables().Build();
+    protected override string[] Args => ["--UseVolumes=false"];
+    // The npm installer finishes successfully; only long-running app resources need health checks.
+    protected override ResourceWaitBehavior WaitBehavior => ResourceWaitBehavior.Named;
+    protected override IEnumerable<string> ResourcesToWaitFor() => ["api", "frontend", "appdb", "cache"];
 
-    public HttpClient CreateHttpClient(string resource) => new()
+    protected override TimeSpan ResourceTimeout => TimeSpan.FromMinutes(3);
+    public override async Task InitializeAsync()
     {
-        BaseAddress = new Uri(config[$"{resource.ToUpperInvariant()}_URL"] ??
-            (resource == "api" ? "http://localhost:5244" : "http://localhost:5173"))
-    };
-
-    public Task<string?> GetConnectionStringAsync(string resource) =>
-        Task.FromResult(config.GetConnectionString(resource));
+        await base.InitializeAsync();
+        using var api = CreateHttpClient("api");
+        var users = await api.GetFromJsonAsync<User[]>("/users");
+        if (users is not { Length: 0 })
+            throw new InvalidOperationException("Each test run must start with an empty database.");
+    }
 }

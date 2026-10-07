@@ -5,17 +5,14 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<DemoDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("appdb")));
-builder.Services.AddStackExchangeRedisOutputCache(options =>
-    options.Configuration = builder.Configuration.GetConnectionString("cache"));
-builder.Services.AddOutputCache();
-builder.Services.AddHealthChecks();
+builder.AddServiceDefaults();
+builder.AddSqlServerDbContext<DemoDbContext>("appdb");
+builder.AddRedisOutputCache("cache");
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 app.UseOutputCache();
-app.MapHealthChecks("/health");
+app.MapDefaultEndpoints();
 app.MapOpenApi();
 
 // This header changes only when SQL is queried; Redis replays it with the response.

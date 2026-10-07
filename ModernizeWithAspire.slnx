@@ -1,4 +1,6 @@
 <Solution>
   <Project Path="Backend/Backend.csproj" />
   <Project Path="Tests/Tests.csproj" />
+  <Project Path="AppHost/AppHost.csproj" />
+  <Project Path="ServiceDefaults/ServiceDefaults.csproj" />
 </Solution>
