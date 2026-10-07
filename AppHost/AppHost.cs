@@ -2,9 +2,7 @@ using Microsoft.Extensions.Configuration;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var sql = builder.AddSqlServer("sql")
-    .WithImageTag("2022-latest")
-    .WithContainerRuntimeArgs("--platform", "linux/amd64");
+var sql = builder.AddSqlServer("sql");
 
 // Development keeps its data; tests pass --UseVolumes=false for a fresh environment.
 if (builder.Configuration.GetValue("UseVolumes", true))
@@ -13,7 +11,7 @@ if (builder.Configuration.GetValue("UseVolumes", true))
 var database = sql.AddDatabase("appdb");
 var cache = builder.AddRedis("cache");
 
-var api = builder.AddProject<Projects.Backend>("api", launchProfileName: "http")
+var api = builder.AddProject<Projects.Backend>("api")
     .WithReference(database).WaitFor(database)
     .WithReference(cache).WaitFor(cache)
     .WithHttpHealthCheck("/health");

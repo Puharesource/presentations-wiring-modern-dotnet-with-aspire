@@ -34,7 +34,7 @@ The tests cover a React browser journey, Redis response reuse/invalidation, and 
 
 ## Rehearse the migration
 
-Start on `live` (initially identical to `before`). Run Compose and show the users page, cache reuse, and configuration. Stop Compose before moving to Aspire. Compare with `git diff before..after -- AppHost Backend Tests` as your reference. Add the AppHost resources, replace the backend's manual registrations with Aspire integrations, then replace the test fixture. The UI and business endpoints stay the same.
+Start on `live` (initially identical to `before`). Run Compose and show the users page, cache reuse, and configuration. Stop Compose before moving to Aspire. Compare with `git diff before..after -- AppHost Backend Tests` as your reference. Add the AppHost resources, replace the backend's manual registrations with Aspire integrations, then replace the test fixture. The UI and business endpoints stay the same. Use Aspire’s default SQL image and container settings; the AppHost has no platform flags to memorize.
 
 Switch branches only after stopping the current environment. On `before`/`live`, use the Compose commands documented in that branch's README. On `after`, use the commands above.
 
