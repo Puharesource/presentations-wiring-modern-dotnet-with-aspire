@@ -42,13 +42,13 @@ Switch branches only after stopping the current environment and preserving any l
 
 ## Entity Framework commands
 
-The API applies the initial Users migration with `MigrateAsync` on startup. The AppHost's `api-migrations` resource exposes **Get Database Status**, **Add Migration…**, **Update Database**, and other EF actions. The backend references `Microsoft.EntityFrameworkCore.Design`; EF can obtain the existing registered DbContext without a separate factory.
+AppHost applies pending migrations with `RunDatabaseUpdateOnStart()`. The API waits for `api-migrations` to become healthy before starting, so fresh test databases have their schema before requests run. `Program.cs` contains no database migration startup code. This migration startup policy applies to local development and test AppHosts; production deployment needs its own migration policy. The AppHost's `api-migrations` resource exposes **Get Database Status**, **Add Migration…**, **Update Database**, and other EF actions. The backend references `Microsoft.EntityFrameworkCore.Design`; EF can obtain the existing registered DbContext without a separate factory.
 
 ```sh
 aspire resource api-migrations ef-database-status --apphost AppHost/AppHost.csproj --non-interactive
 ```
 
-Run that command once before presenting to cache its on-demand EF tool. Adding/removing a migration edits backend source and requires a rebuild before the next migration action. Update Database is normally a no-op because startup already applied the initial migration.
+Run that command once before presenting to cache its on-demand EF tool. Adding/removing a migration edits backend source and requires a rebuild before the next migration action. Update Database is normally a no-op because AppHost already applied the initial migration.
 
 `Aspire.Hosting.EntityFrameworkCore` is currently a preview integration, pinned to `13.6.1-preview.1.26506.6`; the core Aspire packages remain stable `13.6.1`.
 

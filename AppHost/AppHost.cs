@@ -17,8 +17,11 @@ var api = builder.AddProject<Projects.Backend>("api")
     .WithHttpHealthCheck("/health")
     .WithUrl("/openapi/v1.json", "OpenAPI");
 
-api.AddEFMigrations("api-migrations", "Backend.DbContexts.DemoDbContext")
-    .WaitFor(database);
+var migrations = api.AddEFMigrations("api-migrations", "Backend.DbContexts.DemoDbContext")
+    .WaitFor(database)
+    .RunDatabaseUpdateOnStart();
+
+api.WaitFor(migrations);
 
 builder.AddViteApp("frontend", "../frontend")
     .WithReference(api)
