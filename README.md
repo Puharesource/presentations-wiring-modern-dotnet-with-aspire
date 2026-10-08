@@ -18,6 +18,8 @@ aspire wait frontend --apphost AppHost/AppHost.csproj --non-interactive
 aspire describe --apphost AppHost/AppHost.csproj --non-interactive
 ```
 
+The API resource has an **OpenAPI** dashboard link to `/openapi/v1.json`, configured with `WithUrl`. This adds a discoverable link to an existing route; the API still owns that route.
+
 Open the frontend URL printed by Aspire. Its port is allocated by the AppHost; the dashboard shows API logs, SQL/Redis health, and traces. `aspire stop --apphost AppHost/AppHost.csproj --non-interactive` stops this app. Development SQL data stays in the `modernize-demo-sql-migrations-data` volume across restarts.
 
 ## Test a fresh environment

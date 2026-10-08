@@ -14,7 +14,8 @@ var cache = builder.AddRedis("cache");
 var api = builder.AddProject<Projects.Backend>("api")
     .WithReference(database).WaitFor(database)
     .WithReference(cache).WaitFor(cache)
-    .WithHttpHealthCheck("/health");
+    .WithHttpHealthCheck("/health")
+    .WithUrl("/openapi/v1.json", "OpenAPI");
 
 api.AddEFMigrations("api-migrations", "Backend.DbContexts.DemoDbContext")
     .WaitFor(database);
