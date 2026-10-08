@@ -6,7 +6,7 @@ A deliberately small users application: frontend → .NET API → SQL Server, wi
 
 - `before`: Docker Compose and manually supplied configuration.
 - `after`: Aspire 13.6.1 AppHost, service defaults, and isolated TUnit integration/end-to-end tests.
-- `live`: starts at `before`; use it for the live migration.
+- `live`: starts at `before`; available for private coding practice. The talk uses prepared code slides and switches from `before` to `after`.
 
 The original folders are preserved outside this repository at `../ModernizeWithAspire-originals-20261007`. Both originals already contained Aspire and Angular; `before` is an explicit Compose baseline derived from their users feature.
 
@@ -18,7 +18,7 @@ aspire wait frontend --apphost AppHost/AppHost.csproj --non-interactive
 aspire describe --apphost AppHost/AppHost.csproj --non-interactive
 ```
 
-Open the frontend URL printed by Aspire. Its port is allocated by the AppHost; the dashboard shows API logs, SQL/Redis health, and traces. `aspire stop --apphost AppHost/AppHost.csproj --non-interactive` stops this app. Development SQL data stays in the `modernize-demo-sql-data` volume across restarts.
+Open the frontend URL printed by Aspire. Its port is allocated by the AppHost; the dashboard shows API logs, SQL/Redis health, and traces. `aspire stop --apphost AppHost/AppHost.csproj --non-interactive` stops this app. Development SQL data stays in the `modernize-demo-sql-migrations-data` volume across restarts.
 
 ## Test a fresh environment
 
@@ -32,11 +32,25 @@ TUnit creates a separate AppHost for each test run, waits for resources, and dis
 
 The tests cover a React browser journey, Redis response reuse/invalidation, and connections to the actual SQL/Redis resources. Run them while your development environment is running to demonstrate their isolation.
 
-## Rehearse the migration
+## Present the migration
 
-Start on `live` (initially identical to `before`). Run Compose and show the users page, cache reuse, and configuration. Stop Compose before moving to Aspire. Compare with `git diff before..after -- AppHost Backend Tests` as your reference. Add the AppHost resources, replace the backend's manual registrations with Aspire integrations, then replace the test fixture. The UI and business endpoints stay the same. Use Aspire’s default SQL image and container settings; the AppHost has no platform flags to memorize.
+Run `before` with Compose and demonstrate add → reload and Redis reuse. Stop Compose, return to the prepared project-sidebar slides, and explain the changes without editing source. Then switch to `after`, start Aspire, and tour the running app, dashboard, and EF commands. The detailed talk guide lives in the website repo at `presentations/decks/wiring-modern-dotnet-with-aspire/rehearsal.md`.
 
-Switch branches only after stopping the current environment. On `before`/`live`, use the Compose commands documented in that branch's README. On `after`, use the commands above.
+Switch branches only after stopping the current environment and preserving any local edits. `before` stays the Compose baseline; `live` stays available for coding practice. `after` includes the working migration and test setup.
+
+## Entity Framework commands
+
+The API applies the initial Users migration with `MigrateAsync` on startup. The AppHost's `api-migrations` resource exposes **Get Database Status**, **Add Migration…**, **Update Database**, and other EF actions. The backend references `Microsoft.EntityFrameworkCore.Design`; EF can obtain the existing registered DbContext without a separate factory.
+
+```sh
+aspire resource api-migrations ef-database-status --apphost AppHost/AppHost.csproj --non-interactive
+```
+
+Run that command once before presenting to cache its on-demand EF tool. Adding/removing a migration edits backend source and requires a rebuild before the next migration action. Update Database is normally a no-op because startup already applied the initial migration.
+
+`Aspire.Hosting.EntityFrameworkCore` is currently a preview integration, pinned to `13.6.1-preview.1.26506.6`; the core Aspire packages remain stable `13.6.1`.
+
+The migration-based version uses the new `modernize-demo-sql-migrations-data` volume. The old `modernize-demo-sql-data` volume and Compose volume are preserved, but their EnsureCreated databases are not automatically migrated or copied. Fresh tests opt out of development persistence as before.
 
 ## Navigate the demo
 
@@ -46,4 +60,4 @@ Switch branches only after stopping the current environment. On `before`/`live`,
 - `Tests`: API/cache test, browser journey, and environment fixture.
 - `compose.yaml` on `before`; `AppHost/AppHost.cs` on `after`.
 
-This is a local teaching app: no authentication or production deployment, and `EnsureCreated` instead of migrations. SQL Server requires an x64-capable container runtime; Apple Silicon uses Docker's amd64 emulation. Download packages, browser binaries, and images before presenting. Once those are cached, running and testing the app needs no cloud service.
+This is a local teaching app: no authentication or production deployment, and a single initial EF migration. SQL Server requires an x64-capable container runtime; Apple Silicon uses Docker's amd64 emulation. Download packages, browser binaries, and images before presenting. Once those are cached, running and testing the app needs no cloud service.

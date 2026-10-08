@@ -34,11 +34,11 @@ app.MapPost("/users", async (User user, DemoDbContext db, IOutputCacheStore cach
     return Results.Created($"/users/{user.Id}", user);
 });
 
-// EnsureCreated keeps this disposable teaching app small; production apps use migrations.
+// Apply the small initial migration to both persistent development and fresh test databases.
 await using (var scope = app.Services.CreateAsyncScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<DemoDbContext>();
-    await db.Database.EnsureCreatedAsync();
+    await db.Database.MigrateAsync();
 }
 
 await app.RunAsync();
