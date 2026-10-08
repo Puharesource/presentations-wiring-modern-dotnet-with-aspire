@@ -49,3 +49,4 @@ services:
       - backend
 volumes:
   sql-data:
+    name: modernize-demo-compose-migrations-data

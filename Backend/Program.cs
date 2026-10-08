@@ -5,12 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<DemoDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("appdb")));
-builder.Services.AddStackExchangeRedisOutputCache(options =>
-    options.Configuration = builder.Configuration.GetConnectionString("cache"));
-builder.Services.AddOutputCache();
-builder.Services.AddHealthChecks();
+builder.AddSqlServerDbContext<DemoDbContext>("appdb");
+builder.AddRedisOutputCache("cache");
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
@@ -37,11 +33,11 @@ app.MapPost("/users", async (User user, DemoDbContext db, IOutputCacheStore cach
     return Results.Created($"/users/{user.Id}", user);
 });
 
-// EnsureCreated keeps this disposable teaching app small; production apps use migrations.
+// Apply pending migrations before accepting requests.
 await using (var scope = app.Services.CreateAsyncScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<DemoDbContext>();
-    await db.Database.EnsureCreatedAsync();
+    await db.Database.MigrateAsync();
 }
 
 await app.RunAsync();
