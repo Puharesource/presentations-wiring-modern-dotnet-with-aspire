@@ -1,7 +1,7 @@
 # Modernize with Aspire
 
-A local teaching application for a 45-minute English .NET meetup talk. The audience includes developers with mixed experience. The speaker migrates one users application from Docker Compose to Aspire and demonstrates isolated integration/end-to-end tests.
+A small application for exploring a migration from Docker Compose to Aspire. The React frontend calls a .NET API backed by SQL Server and Redis output caching. The example demonstrates local orchestration, resource configuration and readiness, OpenTelemetry, Entity Framework commands, and integration/end-to-end tests.
 
-The owner requested a single repository with before, after, and live branches, a React frontend, SQL Server, Redis used for meaningful caching, TUnit tests, the latest stable Aspire, and a small navigable codebase. No cloud services are needed to run the app once dependencies are downloaded.
+The `before` branch provides the Compose baseline. The `after` branch provides the completed Aspire version. The `live` branch starts from the baseline for hands-on exploration. Keep the business feature and code structure simple so the wiring changes are easy to compare.
 
-The owner explicitly chose the tarkan.dev visual identity and rejected all Twoday branding. Pine/ochre colors, Barlow Condensed headings, Public Sans body text, rectangular controls, and open list rows are inherited from that site's current design. The user's existing users feature and minimal API remain the application story.
+The frontend follows the tarkan.dev visual identity: pine and ochre colors, Barlow Condensed headings, Public Sans body text, rectangular controls, and open list rows. All application services run locally; no cloud account is needed.
