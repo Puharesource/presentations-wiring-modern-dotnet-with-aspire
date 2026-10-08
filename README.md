@@ -42,6 +42,8 @@ Switch branches only after stopping the current environment and preserving any l
 
 ## Entity Framework commands
 
+The Compose baseline already uses the same SQL/Redis client packages, named registrations, and EF migration. Aspire changes who supplies connection strings and owns startup, rather than changing the API feature. `Program.cs` adds ServiceDefaults, switches to shared health endpoints, and moves migration startup into AppHost.
+
 AppHost applies pending migrations with `RunDatabaseUpdateOnStart()`. The API waits for `api-migrations` to become healthy before starting, so fresh test databases have their schema before requests run. `Program.cs` contains no database migration startup code. This migration startup policy applies to local development and test AppHosts; production deployment needs its own migration policy. The AppHost's `api-migrations` resource exposes **Get Database Status**, **Add Migration…**, **Update Database**, and other EF actions. The backend references `Microsoft.EntityFrameworkCore.Design`; EF can obtain the existing registered DbContext without a separate factory.
 
 ```sh
